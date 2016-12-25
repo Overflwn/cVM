@@ -1,0 +1,32 @@
+for k, v in pairs(_G) do
+	write(k..":")
+end
+print("")
+print("")
+for k, v in ipairs(fs.list("/")) do
+	print(v)
+end
+print("Finished BIOS!")
+print("Type 'reboot' to reboot this VM")
+print("Type 'shutdown' to shut this VM down.")
+print("Type 'newFile' to create a file in '/'")
+while true do
+	local e = read()
+	if e == "reboot" then
+		os.reboot()
+	elseif e == "shutdown" then
+		os.shutdown()
+	elseif e == "newFile" then
+		write("Name: ")
+		e = read()
+		if #e < 1 then
+			e = "newFile" 
+		end
+		local file = fs.open("/"..e, "w")
+		write("Text: ")
+		e = read()
+		file.writeLine(e)
+		file.close()
+		print("Finished!")
+	end
+end
