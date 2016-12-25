@@ -40,7 +40,10 @@ _hdTemplate = {
 			"rom/testfolder"
 		},
 		["files"] = {
-			["rom/testfolder/test"] = "print('hello')"
+			"rom/testfolder/test"
+		},
+		["fileData"] = {
+			"Hello!"
 		}
 	}
 }
