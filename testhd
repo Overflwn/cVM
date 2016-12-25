@@ -1,0 +1,21 @@
+{
+  sector0 = {},
+  sector1 = {
+    folders = {
+      "rom",
+      "rom/testfolder",
+    },
+    files = {
+      [ "rom/testfolder/test" ] = "print('hello')",
+    },
+  },
+  bootSector = {
+    [ "bios.lua" ] = "for k, v in pairs(_G) do\
+\009print(k)\
+end\
+print(tostring(fs))\
+fs.list = function(p)\
+\009return fs.list(_vmpath..p)\
+end",
+  },
+}

@@ -1,0 +1,7 @@
+for k, v in pairs(_G) do
+	print(k)
+end
+print(tostring(fs))
+fs.list = function(p)
+	return fs.list(_vmpath..p)
+end
