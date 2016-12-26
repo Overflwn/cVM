@@ -286,9 +286,6 @@ end
 function _fs.delete(path)
 	if _fs.exists(path) then
 		local ind = _fs.find(path)
-		print("Inode: "..tostring(ind))
-		print("sectorBlocks: "..tostring(thisHD.sector1.blocks[thisHD.sector1.inodes[ind].block]))
-		print("sectorInodes: "..tostring(thisHD.sector1.inodes[ind].block))
 		thisHD.sector1.blocks[thisHD.sector1.inodes[ind].block] = nil
 		thisHD.sector1.inodes[ind] = {}
 		for k, v in pairs(thisHD.sector1.blocks) do
