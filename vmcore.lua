@@ -42,7 +42,6 @@ function _fs.find(path)
 end
 
 function _fs.list(path)
-	print(type(_fs.fEdit))
 	if #path < 1 then return end
 	if string.find(path, "/") == 1 and #path > 1 then path = string.sub(path, 2) end
 	if not string.find(path, "/", #path) then path = path.."/" end
@@ -218,6 +217,7 @@ end
 
 function _fs.getName(path)
 	if string.find(path, "/") == 1 then path = string.sub(path, 2) end
+	if string.find(path, "/", #path) then path = string.sub(path, 1, #path-1) end
 	local ppp = string.reverse(path)
 	local pp = string.reverse(path)
 	local p = string.reverse(path)
@@ -283,13 +283,30 @@ function _fs.complete()
 	return nil
 end
 
---[[local function _fs.fEdit(path)
-	if fExists(path)
-		local ind = fFind(path)
-		_fs.blocks[_fs.inodes[ind].block] = nil
-		_fs.inodes[_ind] = {}
+function _fs.delete(path)
+	if _fs.exists(path) then
+		local ind = _fs.find(path)
+		print("Inode: "..tostring(ind))
+		print("sectorBlocks: "..tostring(thisHD.sector1.blocks[thisHD.sector1.inodes[ind].block]))
+		print("sectorInodes: "..tostring(thisHD.sector1.inodes[ind].block))
+		thisHD.sector1.blocks[thisHD.sector1.inodes[ind].block] = nil
+		thisHD.sector1.inodes[ind] = {}
+		for k, v in pairs(thisHD.sector1.blocks) do
+			if type(v) == "table" then
+				for a, b in pairs(v) do
+					if a == _fs.getName(path) and b == ind then
+						thisHD.sector1.blocks[k][a] = nil
+						break
+					end
+				end
+			end
+		end
+		return true
+	else
+		return false, "Path doesn't exist."
 	end
-end]]
+	return false, "unknown error"
+end
 
 function _fs.getDrive(path)
 	if _fs.exists(path) then

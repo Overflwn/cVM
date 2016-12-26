@@ -5,24 +5,13 @@
       "hello, world!",
       {
         rom = 3,
-        myName = 9,
         testFile = 1,
       },
       {
         romFile = 4,
       },
       "Hello, ROM",
-      "\
-isDavid",
-      "\
-isDavid",
-      "\
-isDavid",
-      "\
-isDavid",
-      "\
-isDavid",
-      last_block = 9,
+      last_block = 5,
     },
     inodes = {
       {
@@ -45,27 +34,8 @@ isDavid",
         readOnly = false,
         type = 1,
       },
-      {
-        block = 5,
-        type = 1,
-      },
-      {
-        block = 6,
-        type = 1,
-      },
-      {
-        block = 7,
-        type = 1,
-      },
-      {
-        block = 8,
-        type = 1,
-      },
-      {
-        type = 1,
-        block = 9,
-      },
-      last_inode = 9,
+      {},
+      last_inode = 5,
     },
   },
   bootSector = {
@@ -103,6 +73,15 @@ while true do\
 \009\009local list = fs.list(\"/\")\
 \009\009for k, v in ipairs(list) do\
 \009\009\009print(v)\
+\009\009end\
+\009elseif e == \"del\" then\
+\009\009write(\"Path:\")\
+\009\009local e = read()\
+\009\009local ok, err = fs.delete(e..\"/\")\
+\009\009if ok then\
+\009\009\009print(\"Finished!\")\
+\009\009else\
+\009\009\009print(\"Error: \"..err)\
 \009\009end\
 \009end\
 end",

@@ -33,5 +33,14 @@ while true do
 		for k, v in ipairs(list) do
 			print(v)
 		end
+	elseif e == "del" then
+		write("Path:")
+		local e = read()
+		local ok, err = fs.delete(e.."/")
+		if ok then
+			print("Finished!")
+		else
+			print("Error: "..err)
+		end
 	end
 end
