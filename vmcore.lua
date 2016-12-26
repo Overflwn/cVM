@@ -96,7 +96,7 @@ local function runHardDrive(path)
 	file.close()
 	os.loadAPI("/tmpfs")
 	env.fs = tmpfs
-	local forbidden = {"colors", "colours", "disk", "gps", "help", "io", "keys", "paintutils", "parallel", "peripheral", "rednet", "settings", "term", "textutils", "vector", "window"}
+	local forbidden = {"colors", "colours", "disk", "gps", "help", "io", "keys", "paintutils", "parallel", "peripheral", "rednet", "settings", "textutils", "vector", "window"}
 	for k, v in ipairs(forbidden) do
 		env[v] = nil
 	end
