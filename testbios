@@ -22,11 +22,16 @@ while true do
 		if #e < 1 then
 			e = "newFile" 
 		end
-		local file = fs.open("/"..e, "w")
+		local file = fs.open(e, "w")
 		write("Text: ")
 		e = read()
 		file.writeLine(e)
 		file.close()
 		print("Finished!")
+	elseif e == "ls" then
+		local list = fs.list("/")
+		for k, v in ipairs(list) do
+			print(v)
+		end
 	end
 end

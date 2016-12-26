@@ -1,17 +1,71 @@
 {
   sector0 = {},
   sector1 = {
-    folders = {
-      "rom",
-      "rom/testfolder",
-    },
-    fileData = {
-      "hello",
+    blocks = {
       "hello, world!",
+      {
+        rom = 3,
+        myName = 9,
+        testFile = 1,
+      },
+      {
+        romFile = 4,
+      },
+      "Hello, ROM",
+      "\
+isDavid",
+      "\
+isDavid",
+      "\
+isDavid",
+      "\
+isDavid",
+      "\
+isDavid",
+      last_block = 9,
     },
-    files = {
-      "rom/testfolder/testfile",
-      "testfile",
+    inodes = {
+      {
+        block = 1,
+        readOnly = false,
+        type = 1,
+      },
+      {
+        block = 2,
+        readOnly = false,
+        type = 0,
+      },
+      {
+        block = 3,
+        readOnly = false,
+        type = 0,
+      },
+      {
+        block = 4,
+        readOnly = false,
+        type = 1,
+      },
+      {
+        block = 5,
+        type = 1,
+      },
+      {
+        block = 6,
+        type = 1,
+      },
+      {
+        block = 7,
+        type = 1,
+      },
+      {
+        block = 8,
+        type = 1,
+      },
+      {
+        type = 1,
+        block = 9,
+      },
+      last_inode = 9,
     },
   },
   bootSector = {
@@ -39,12 +93,17 @@ while true do\
 \009\009if #e < 1 then\
 \009\009\009e = \"newFile\" \
 \009\009end\
-\009\009local file = fs.open(\"/\"..e, \"w\")\
+\009\009local file = fs.open(e, \"w\")\
 \009\009write(\"Text: \")\
 \009\009e = read()\
 \009\009file.writeLine(e)\
 \009\009file.close()\
 \009\009print(\"Finished!\")\
+\009elseif e == \"ls\" then\
+\009\009local list = fs.list(\"/\")\
+\009\009for k, v in ipairs(list) do\
+\009\009\009print(v)\
+\009\009end\
 \009end\
 end",
   },
