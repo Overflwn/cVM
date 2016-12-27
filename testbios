@@ -1,5 +1,5 @@
 for k, v in pairs(_G) do
-	write(k..":")
+	term.write(k..":")
 end
 print("")
 print("")
@@ -17,16 +17,30 @@ while true do
 	elseif e == "shutdown" then
 		os.shutdown()
 	elseif e == "newFile" then
-		write("Name: ")
+		term.write("Name: ")
 		e = read()
 		if #e < 1 then
 			e = "newFile" 
 		end
-		local file = fs.open("/"..e, "w")
-		write("Text: ")
+		local file = fs.open(e, "w")
+		term.write("Text: ")
 		e = read()
 		file.writeLine(e)
 		file.close()
 		print("Finished!")
+	elseif e == "ls" then
+		local list = fs.list("/")
+		for k, v in ipairs(list) do
+			print(v)
+		end
+	elseif e == "del" then
+		term.write("Path:")
+		local e = read()
+		local ok, err = fs.delete(e.."/")
+		if ok then
+			print("Finished!")
+		else
+			print("Error: "..err)
+		end
 	end
 end

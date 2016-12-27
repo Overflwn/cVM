@@ -16,7 +16,7 @@
   },
   bootSector = {
     [ "bios.lua" ] = "for k, v in pairs(_G) do\
-\009write(k..\":\")\
+\009term.write(k..\":\")\
 end\
 print(\"\")\
 print(\"\")\
@@ -34,17 +34,31 @@ while true do\
 \009elseif e == \"shutdown\" then\
 \009\009os.shutdown()\
 \009elseif e == \"newFile\" then\
-\009\009write(\"Name: \")\
+\009\009term.write(\"Name: \")\
 \009\009e = read()\
 \009\009if #e < 1 then\
 \009\009\009e = \"newFile\" \
 \009\009end\
-\009\009local file = fs.open(\"/\"..e, \"w\")\
-\009\009write(\"Text: \")\
+\009\009local file = fs.open(e, \"w\")\
+\009\009term.write(\"Text: \")\
 \009\009e = read()\
 \009\009file.writeLine(e)\
 \009\009file.close()\
 \009\009print(\"Finished!\")\
+\009elseif e == \"ls\" then\
+\009\009local list = fs.list(\"/\")\
+\009\009for k, v in ipairs(list) do\
+\009\009\009print(v)\
+\009\009end\
+\009elseif e == \"del\" then\
+\009\009term.write(\"Path:\")\
+\009\009local e = read()\
+\009\009local ok, err = fs.delete(e..\"/\")\
+\009\009if ok then\
+\009\009\009print(\"Finished!\")\
+\009\009else\
+\009\009\009print(\"Error: \"..err)\
+\009\009end\
 \009end\
 end",
   },

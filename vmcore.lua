@@ -119,7 +119,8 @@ local function runHardDrive(path)
 		"term",
 		"peripheral",
 		"http",
-		"vector"
+		"vector",
+		"read"
 	}
 	--[[for k, v in pairs(_G) do
 		env[k] = v
