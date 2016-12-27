@@ -7,7 +7,10 @@
     },
     fileData = {
       "hello",
-      "hello, world!",
+      "local a = fs.list(\"/\")\
+for k, v in ipairs(a) do\
+\009print(v)\
+end",
     },
     files = {
       "rom/testfolder/testfile",
@@ -33,6 +36,13 @@ while true do\
 \009\009os.reboot()\
 \009elseif e == \"shutdown\" then\
 \009\009os.shutdown()\
+\009elseif fs.exists(e) and fs.isDir(e) == false then\
+\009\009local a, err = loadfile(e)\
+\009\009if not a then\
+\009\009\009print(err)\
+\009\009else\
+\009\009\009local _, err = pcall(a)\
+\009\009end\
 \009elseif e == \"newFile\" then\
 \009\009term.write(\"Name: \")\
 \009\009e = read()\

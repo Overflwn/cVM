@@ -16,6 +16,13 @@ while true do
 		os.reboot()
 	elseif e == "shutdown" then
 		os.shutdown()
+	elseif fs.exists(e) and fs.isDir(e) == false then
+		local a, err = loadfile(e)
+		if not a then
+			print(err)
+		else
+			local _, err = pcall(a)
+		end
 	elseif e == "newFile" then
 		term.write("Name: ")
 		e = read()
