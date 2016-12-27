@@ -494,13 +494,23 @@ local function runHardDrive(path)
 		"term",
 		"peripheral",
 		"http",
-		"vector"
+		"vector",
+		"read",
+		"loadfile"
 	}
 	--[[for k, v in pairs(_G) do
 		env[k] = v
 	end]]
 	for k, v in ipairs(allowed) do
 		env[v] = _G[v]
+	end
+	env['loadfile'] = function(p)
+		local f = env.fs.open(p, "r")
+		local inhalt = f.readAll()
+		f.close()
+		local a = loadstring(inhalt)
+		setfenv(a, env)
+		return a
 	end
 	thisHD = inhalt
 	local file = fs.open("/dummyFS", "r")
@@ -512,10 +522,10 @@ local function runHardDrive(path)
 	file.close()
 	os.loadAPI("/tmpfs")
 	env.fs = _fs
-	local forbidden = {"colors", "colours", "disk", "gps", "help", "keys", "paintutils", "parallel", "rednet", "settings", "textutils", "window"}
+	--[[local forbidden = {"colors", "colours", "disk", "gps", "help", "keys", "paintutils", "parallel", "rednet", "settings", "textutils", "window"}
 	for k, v in ipairs(forbidden) do
 		env[v] = nil
-	end
+	end]]
 	env._G = env
 	setfenv(bios, env)
 	--shell.setPath("/tmp/"..fs.getName(path).."/")

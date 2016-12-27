@@ -1,5 +1,5 @@
 for k, v in pairs(_G) do
-	write(k..":")
+	term.write(k..":")
 end
 print("")
 print("")
@@ -16,14 +16,21 @@ while true do
 		os.reboot()
 	elseif e == "shutdown" then
 		os.shutdown()
+	elseif fs.exists(e) and fs.isDir(e) == false then
+		local a, err = loadfile(e)
+		if not a then
+			print(err)
+		else
+			local _, err = pcall(a)
+		end
 	elseif e == "newFile" then
-		write("Name: ")
+		term.write("Name: ")
 		e = read()
 		if #e < 1 then
 			e = "newFile" 
 		end
 		local file = fs.open(e, "w")
-		write("Text: ")
+		term.write("Text: ")
 		e = read()
 		file.writeLine(e)
 		file.close()
@@ -34,7 +41,7 @@ while true do
 			print(v)
 		end
 	elseif e == "del" then
-		write("Path:")
+		term.write("Path:")
 		local e = read()
 		local ok, err = fs.delete(e.."/")
 		if ok then
