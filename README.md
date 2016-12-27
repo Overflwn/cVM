@@ -9,9 +9,7 @@ vmcore.lua
 To get usage info.
 
 # Important in this specific build
-This version uses a "virtual" filesystem, using inodes
-The problem currently is:
-(Not hard to fix:) No deleting, I'll need to iterate through every folder containing a link to the file
+The problem is:
 (Maybe pretty hard:) No opening files in binarymode, idk if people even use it...
 Some extra bugs I didn't find..
 
