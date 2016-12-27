@@ -83,8 +83,49 @@ local function runHardDrive(path)
 	if not bios then return false, err end
 	print(tostring(bios))
 	local env = {}
-	for k, v in pairs(_G) do
+	local allowed = {
+		"assert",
+		"collectgarbage",
+		"dofile",
+		"error",
+		"getfenv",
+		"getmetatable",
+		"ipairs",
+		"load",
+		"loadstring",
+		"module",
+		"next",
+		"pairs",
+		"pcall",
+		"print",
+		"rawequal",
+		"rawget",
+		"rawset",
+		"require",
+		"select",
+		"setfenv",
+		"setmetatable",
+		"tonumber",
+		"tostring",
+		"type",
+		"unpack",
+		"xpcall",
+		"coroutine",
+		"io",
+		"math",
+		"os",
+		"string",
+		"table",
+		"term",
+		"peripheral",
+		"http",
+		"vector"
+	}
+	--[[for k, v in pairs(_G) do
 		env[k] = v
+	end]]
+	for k, v in ipairs(allowed) do
+		env[v] = _G[v]
 	end
 	local thisHD = inhalt
 	local file = fs.open("/dummyFS", "r")
@@ -96,7 +137,7 @@ local function runHardDrive(path)
 	file.close()
 	os.loadAPI("/tmpfs")
 	env.fs = tmpfs
-	local forbidden = {"colors", "colours", "disk", "gps", "help", "io", "keys", "paintutils", "parallel", "peripheral", "rednet", "settings", "textutils", "vector", "window"}
+	local forbidden = {"colors", "colours", "disk", "gps", "help", "keys", "paintutils", "parallel", "rednet", "settings", "textutils", "window"}
 	for k, v in ipairs(forbidden) do
 		env[v] = nil
 	end
