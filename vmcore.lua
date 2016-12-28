@@ -201,9 +201,9 @@ end
 function _fs.isDir(path)
 	local ok = _fs.find(path)
 	if type(ok) == "boolean" then return false, "Path doesn't exist." end
-	if thisHD.sector1.inodes[ok].type == 0 then
+	if type(ok) == "number" and thisHD.sector1.inodes[ok].type == 0 then
 		return true
-	else
+	elseif type(ok) == "number" and thisHD.sector1.inodes[ok].type == 1 then
 		return false
 	end
 end
@@ -488,7 +488,6 @@ local function runHardDrive(path)
 		"coroutine",
 		"io",
 		"math",
-		"os",
 		"string",
 		"table",
 		"term",
@@ -512,6 +511,7 @@ local function runHardDrive(path)
 		setfenv(a, env)
 		return a
 	end
+
 	thisHD = inhalt
 	local file = fs.open("/dummyFS", "r")
 	local inhalt = file.readAll()
@@ -543,13 +543,13 @@ local function runHardDrive(path)
 		c1 = coroutine.create(nothin)
 	end
 
+	env['_vm'] = {}
 
-
-	env.os.shutdown = function()
+	env._vm.shutdown = function()
 		return sd()
 	end
 
-	env.os.reboot = function()
+	env._vm.reboot = function()
 		return rb()
 	end
 	while true do

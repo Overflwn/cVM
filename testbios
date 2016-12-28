@@ -1,3 +1,22 @@
+_G.os = {}
+os.loadAPI = function(path)
+	local f, err = loadfile(path)
+	if not f then
+		return false, err
+	end
+	local env = {}
+	setmetatable(env, {__index=_G})
+	setfenv(f, env)
+	local k, err = pcall(f)
+	if not k then 
+		return false, err
+	end
+	_G[fs.getName(path)] = {}
+	for k, v in pairs(env) do
+		_G[fs.getName(path)][k] = v
+	end
+	return true
+end
 for k, v in pairs(_G) do
 	term.write(k..":")
 end
@@ -7,15 +26,19 @@ for k, v in ipairs(fs.list("/")) do
 	print(v)
 end
 print("Finished BIOS!")
+print("NOTE: This is NOT CraftOS, many APIs you know from")
+print("stock CC are not existent!!!")
 print("Type 'reboot' to reboot this VM")
 print("Type 'shutdown' to shut this VM down.")
-print("Type 'newFile' to create a file in '/'")
+print("Type 'newFile' to create a file in /")
+print("Type 'ls' to list the files in /")
+print("Type 'del' to delete a file in /")
 while true do
 	local e = read()
 	if e == "reboot" then
-		os.reboot()
+		_vm.reboot()
 	elseif e == "shutdown" then
-		os.shutdown()
+		_vm.shutdown()
 	elseif fs.exists(e) and fs.isDir(e) == false then
 		local a, err = loadfile(e)
 		if not a then
