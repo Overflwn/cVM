@@ -5,6 +5,10 @@
       "rom",
       "rom/testfolder",
     },
+    files = {
+      "rom/testfolder/testfile",
+      "testfile",
+    },
     fileData = {
       "hello",
       "local a = fs.list(\"/\")\
@@ -12,13 +16,28 @@ for k, v in ipairs(a) do\
 \009print(v)\
 end",
     },
-    files = {
-      "rom/testfolder/testfile",
-      "testfile",
-    },
   },
   bootSector = {
-    [ "bios.lua" ] = "for k, v in pairs(_G) do\
+    [ "bios.lua" ] = "_G.os = {}\
+os.loadAPI = function(path)\
+\009local f, err = loadfile(path)\
+\009if not f then\
+\009\009return false, err\
+\009end\
+\009local env = {}\
+\009setmetatable(env, {__index=_G})\
+\009setfenv(f, env)\
+\009local k, err = pcall(f)\
+\009if not k then \
+\009\009return false, err\
+\009end\
+\009_G[fs.getName(path)] = {}\
+\009for k, v in pairs(env) do\
+\009\009_G[fs.getName(path)][k] = v\
+\009end\
+\009return true\
+end\
+for k, v in pairs(_G) do\
 \009term.write(k..\":\")\
 end\
 print(\"\")\
@@ -27,15 +46,19 @@ for k, v in ipairs(fs.list(\"/\")) do\
 \009print(v)\
 end\
 print(\"Finished BIOS!\")\
+print(\"NOTE: This is NOT CraftOS, many APIs you know from\")\
+print(\"stock CC are not existent!!!\")\
 print(\"Type 'reboot' to reboot this VM\")\
 print(\"Type 'shutdown' to shut this VM down.\")\
-print(\"Type 'newFile' to create a file in '/'\")\
+print(\"Type 'newFile' to create a file in /\")\
+print(\"Type 'ls' to list the files in /\")\
+print(\"Type 'del' to delete a file in /\")\
 while true do\
 \009local e = read()\
 \009if e == \"reboot\" then\
-\009\009os.reboot()\
+\009\009_vm.reboot()\
 \009elseif e == \"shutdown\" then\
-\009\009os.shutdown()\
+\009\009_vm.shutdown()\
 \009elseif fs.exists(e) and fs.isDir(e) == false then\
 \009\009local a, err = loadfile(e)\
 \009\009if not a then\

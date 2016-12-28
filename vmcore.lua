@@ -113,7 +113,6 @@ local function runHardDrive(path)
 		"coroutine",
 		"io",
 		"math",
-		"os",
 		"string",
 		"table",
 		"term",
@@ -168,13 +167,13 @@ local function runHardDrive(path)
 		c1 = coroutine.create(nothin)
 	end
 
+	env['_vm'] = {}
 
-
-	env.os.shutdown = function()
+	env._vm.shutdown = function()
 		return sd()
 	end
 
-	env.os.reboot = function()
+	env._vm.reboot = function()
 		return rb()
 	end
 	while true do
