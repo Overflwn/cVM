@@ -30,6 +30,10 @@ function getFreeSpace(path)
 	return old.getFreeSpace(rootPath..path)
 end
 
+function getSize(path)
+	return old.getSize(rootPath..path)
+end
+
 function makeDir(path)
 	return old.makeDir(rootPath..path)
 end

@@ -110,6 +110,8 @@ local function runHardDrive(path)
 		"type",
 		"unpack",
 		"xpcall",
+		"bit",
+		"bit32",
 		"coroutine",
 		"io",
 		"math",
@@ -129,13 +131,21 @@ local function runHardDrive(path)
 		env[v] = _G[v]
 	end
 	env['loadfile'] = function(p)
-		local f = env.fs.open(p, "r")
+		local f, err = env.fs.open(p, "r")
 		local inhalt = f.readAll()
 		f.close()
 		local a = loadstring(inhalt)
 		setfenv(a, env)
 		return a
 	end
+	env['os'] = {}
+	env.os.pullEventRaw = os.pullEventRaw
+	env.os.pullEvent = os.pullEvent
+	env.os.queueEvent = os.queueEvent
+	env.os.startTimer = os.startTimer
+	env.os.time = os.time
+	env.os.sleep = os.sleep
+	env.os.setAlarm = os.setAlarm
 	local thisHD = inhalt
 	local file = fs.open("/dummyFS", "r")
 	local inhalt = file.readAll()
