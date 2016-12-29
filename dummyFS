@@ -59,7 +59,13 @@ function open(path, mode)
 end
 
 function find(wildcard)
-	return old.find(rootPath..wildcard)
+	local f = old.find(rootPath..wildcard)
+	local t = {}
+	for k, v in ipairs(f) do
+		local a = string.sub(v, #rootPath)
+		table.insert(t, a)
+	end
+	return t
 end
 
 function getDir(path)

@@ -40,6 +40,12 @@ end
 _G.sleep = function(time)
 	return os.sleep(time)
 end
+_G.printError = function(string)
+	local c = term.getTextColor()
+	term.setTextColor(16384)
+	print(string)
+	term.setTextColor(c)
+end
 function os.run(env, path, ...)
 	local tArgs = {...}
 	local func, err = loadfile(path)
