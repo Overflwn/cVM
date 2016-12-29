@@ -66,7 +66,8 @@ end",
     },
   },
   bootSector = {
-    [ "bios.lua" ] = "_G.os = {}\
+    [ "bios.lua" ] = "\
+local label = \"cVM\"\
 os.loadAPI = function(path)\
 \009local f, err = loadfile(path)\
 \009if not f then\
@@ -85,9 +86,43 @@ os.loadAPI = function(path)\
 \009end\
 \009return true\
 end\
+os.version = function()\
+\009return \"cVMWare CraftOS 1.7\"\
+end\
+os.getComputerID = function()\
+\009return 0\
+end\
+os.getComputerLabel = function()\
+\009return label\
+end\
+os.setComputerLabel = function(lbl)\
+\009if lbl then\
+\009\009label = lbl\
+\009else\
+\009\009label = \"cVM\"\
+\009end\
+end\
+_G.write = function(string)\
+\009term.write(string)\
+end\
+_G.sleep = function(time)\
+\009return os.sleep(time)\
+end\
+function os.run(env, path, ...)\
+\009local tArgs = {...}\
+\009local func, err = loadfile(path)\
+\009if not func then return false, err end\
+\009setmetatable(env, {__index = _G})\
+\009setfenv(func, env)\
+\009return func(unpack(tArgs))\
+end\
+os.unloadAPI = function(name)\
+\009_G[name] = nil\
+end\
 for k, v in pairs(_G) do\
 \009term.write(k..\":\")\
 end\
+\
 print(\"\")\
 print(\"\")\
 for k, v in ipairs(fs.list(\"/\")) do\
@@ -96,9 +131,9 @@ end\
 print(\"Finished BIOS!\")\
 print(\"NOTE: This is NOT CraftOS, many APIs you know from\")\
 print(\"stock CC are not existent!!!\")\
-print(\"Type \"'\"reboot\"'\"\" to reboot this VM\")\
+print(\"Type 'reboot' to reboot this VM\")\
 print(\"Type 'shutdown' to shut this VM down.\")\
-print(\"Type 'newFile' to create a file in '/'\")\
+print(\"Type 'newFile' to create a file in /\")\
 print(\"Type 'ls' to list the files in /\")\
 print(\"Type 'del' to delete a file in /\")\
 while true do\
@@ -113,6 +148,11 @@ while true do\
 \009\009\009print(err)\
 \009\009else\
 \009\009\009local _, err = pcall(a)\
+\009\009\009if not _ then\
+\009\009\009\009print(err)\
+\009\009\009else\
+\009\009\009\009print(\"Successfully executed!\")\
+\009\009\009end\
 \009\009end\
 \009elseif e == \"newFile\" then\
 \009\009term.write(\"Name: \")\
@@ -135,10 +175,10 @@ while true do\
 \009\009term.write(\"Path:\")\
 \009\009local e = read()\
 \009\009local ok, err = fs.delete(e..\"/\")\
-\009\009if ok then\
+\009\009if ok or err == nil then\
 \009\009\009print(\"Finished!\")\
 \009\009else\
-\009\009\009print(\"Error: \"..err)\
+\009\009\009print(\"Error:\"..tostring(err))\
 \009\009end\
 \009end\
 end",

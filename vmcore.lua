@@ -495,7 +495,9 @@ local function runHardDrive(path)
 		"http",
 		"vector",
 		"read",
-		"loadfile"
+		"loadfile",
+		"bit",
+		"bit32"
 	}
 	--[[for k, v in pairs(_G) do
 		env[k] = v
@@ -511,7 +513,14 @@ local function runHardDrive(path)
 		setfenv(a, env)
 		return a
 	end
-
+	env['os'] = {}
+	env.os.pullEventRaw = os.pullEventRaw
+	env.os.pullEvent = os.pullEvent
+	env.os.queueEvent = os.queueEvent
+	env.os.startTimer = os.startTimer
+	env.os.time = os.time
+	env.os.sleep = os.sleep
+	env.os.setAlarm = os.setAlarm
 	thisHD = inhalt
 	local file = fs.open("/dummyFS", "r")
 	local inhalt = file.readAll()

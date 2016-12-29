@@ -1,4 +1,5 @@
-_G.os = {}
+
+local label = "cVM"
 os.loadAPI = function(path)
 	local f, err = loadfile(path)
 	if not f then
@@ -17,9 +18,43 @@ os.loadAPI = function(path)
 	end
 	return true
 end
+os.version = function()
+	return "cVMWare CraftOS 1.7"
+end
+os.getComputerID = function()
+	return 0
+end
+os.getComputerLabel = function()
+	return label
+end
+os.setComputerLabel = function(lbl)
+	if lbl then
+		label = lbl
+	else
+		label = "cVM"
+	end
+end
+_G.write = function(string)
+	term.write(string)
+end
+_G.sleep = function(time)
+	return os.sleep(time)
+end
+function os.run(env, path, ...)
+	local tArgs = {...}
+	local func, err = loadfile(path)
+	if not func then return false, err end
+	setmetatable(env, {__index = _G})
+	setfenv(func, env)
+	return func(unpack(tArgs))
+end
+os.unloadAPI = function(name)
+	_G[name] = nil
+end
 for k, v in pairs(_G) do
 	term.write(k..":")
 end
+
 print("")
 print("")
 for k, v in ipairs(fs.list("/")) do
@@ -45,6 +80,11 @@ while true do
 			print(err)
 		else
 			local _, err = pcall(a)
+			if not _ then
+				print(err)
+			else
+				print("Successfully executed!")
+			end
 		end
 	elseif e == "newFile" then
 		term.write("Name: ")
@@ -67,10 +107,10 @@ while true do
 		term.write("Path:")
 		local e = read()
 		local ok, err = fs.delete(e.."/")
-		if ok then
+		if ok or err == nil then
 			print("Finished!")
 		else
-			print("Error: "..err)
+			print("Error:"..tostring(err))
 		end
 	end
 end
