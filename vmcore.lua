@@ -1,7 +1,132 @@
 thisHD = {}
 
 _fs = {}
+local function takeApart(p)
+	if #p < 2 or type(p) ~= "string" then return false, "string/path expected" end
+	if string.find(p, "/") ~= 1 then p = "/"..p end
+	if string.find(p, "/", #p, #p) then p = string.sub(p, 1, #p-1) end
+	local parts = {}
+	local cs = p
+	repeat
+		local h, j = string.find(cs, "/")
+		if h then
+			if h == 1 then
+				table.insert(parts, "/")
+				cs = string.sub(cs, 2)
+			else
+				table.insert(parts, string.sub(cs, 1, h-1))
+
+				cs = string.sub(cs, h+1)
+			end
+		else
+			table.insert(parts, cs)
+		end
+	until h == nil
+	return parts
+end
+
 function _fs.find(path)
+	if type(path) == "string" and #path < 1 then path = "/" end
+	if #path > 0 and type(path) == "string" then
+		if string.find(path, "/") ~= 1 then path = "/"..path end
+		if string.find(path, "/", #path) and #path > 1 then path = string.sub(path, 1, #path-1) end
+	elseif type(path) ~= "string" then
+		return false, "string expected"
+	elseif path == "/" then
+		ind = _fs.findInode("/") --get the root inode
+		local t = {}
+		for each, f in pairs(thisHD.sector1.blocks[thisHD.sector1.inodes[ind].block]) do
+			table.insert(t, f)
+		end
+		return t
+	end
+	local parts = takeApart(path)
+	for each, part in ipairs(parts) do
+		print(part)
+	end
+	local function searchForIt(parts)
+
+		local ind = 0
+		local counter = 1
+		local cPath = ""
+		local t = {}
+		while true do
+			if counter <= #parts then
+				if parts[counter] ~= "*" then
+					ind = _fs.findInode(cPath..parts[counter])
+
+					if not ind then
+						return t
+					else
+						print("Found "..counter)
+						if counter == #parts then
+							if cPath ~= "/" then
+								table.insert(t, cPath.."/"..parts[counter])
+							else
+								table.insert(t, cPath..parts[counter])
+							end
+							return t
+						else
+							if cPath ~= "/" and counter ~= 1 then
+								cPath = cPath.."/"..parts[counter]
+								counter = counter+1
+							elseif counter == 1 then
+                cPath = parts[counter]
+								counter = counter+1
+              elseif cPath == "/" then
+                cPath = cPath..parts[counter]
+                counter = counter+1
+							end
+						end
+					end
+				elseif counter < #parts then
+					local pp = cPath
+          print(counter..": "..cPath)
+					if not string.find(pp, "/", #pp) then pp = pp.."/" end
+					root = _fs.list(pp)
+					tt = {}
+					for each, f in ipairs(root) do
+						print("list: "..f)
+						if _fs.isDir(pp..f) then
+							table.insert(tt, f)
+						end
+					end
+					for each, folder in ipairs(tt) do
+						local partss = {}
+						for e, part in ipairs(parts) do
+							if e ~= counter then
+								table.insert(partss, part)
+							else
+								table.insert(partss, folder)
+							end
+						end
+						local rr = searchForIt(partss)
+						if type(rr) == "table" then
+							for e, a in ipairs(rr) do
+								table.insert(t, a)
+							end
+						end
+					end
+					return t
+				else
+					local pp = cPath
+          print(counter..": "..cPath)
+					if not string.find(pp, "/", #pp) then pp = pp.."/" end
+					root = _fs.list(pp)
+					for each, f in ipairs(root) do
+						print("list: "..f)
+						table.insert(t, f)
+					end
+					return t
+				end
+			end
+		end
+	end
+	local t = searchForIt(parts)
+	return t
+end
+
+function _fs.findInode(path)
 	local inode = 0
 	if #path < 1 then return end
 	if string.find(path, "/") == 1 and #path > 1 then path = string.sub(path, 2) end
@@ -84,7 +209,7 @@ function _fs.list(path)
 end
 
 function _fs.listData(path)
-	local ind = _fs.find(path)
+	local ind = _fs.findInode(path)
 	if not type(ind) == "number" then return false, "Not such file." end
 	if thisHD.sector1.inodes[ind].type == 0 then return false, "Is a directory." end
 	return thisHD.sector1.blocks[thisHD.sector1.inodes[ind].block]
@@ -109,36 +234,61 @@ end
 function _fs.open(path, mode)
 	local file = {}
 	if mode == "w" then
-		if type(_fs.find(path)) == "number" then
-			if thisHD.sector1.inodes[_fs.find(path)].type == 0 then return false, "Is a directory." end
+		if type(_fs.findInode(path)) == "number" then
+			if thisHD.sector1.inodes[_fs.findInode(path)].type == 0 then return false, "Is a directory." end
 		end
 		local ind = nil
-		if _fs.find(path) then
-			ind = _fs.find(path)
+		if _fs.findInode(path) then
+			print("already exists: "..path)
+			ind = _fs.findInode(path)
+		elseif _fs.findInode(_fs.getDir(path)) and _fs.isDir(_fs.getDir(path)) then
+			print("parent found: ".._fs.getDir(path))
+		else
+			print("parent not found")
+			return false, "no such dir"
 		end
 		file = {
 			dat = "",
 			pth = path,
 			id = ind,
+			bClosed = false,
 			write = function(data)
-				if type(data) == "string" then
-					file.dat = data
+				if not file.bClosed then
+					if type(data) == "string" then
+						file.dat = data
+					end
+				else
+					return false, "file is closed"
 				end
 			end,
 			writeLine = function(data)
-				if type(data) == "string" then
-					file.dat = file.dat.."\n"..data
+				if not file.bClosed then
+					if type(data) == "string" then
+						file.dat = file.dat.."\n"..data
+					end
+				else
+					return false, "file is closed"
 				end
 			end,
 			close = function()
-				if file.id then
-					return _fs.fEdit(ind, "edit", 1, file.dat)
+				if not file.bClosed then
+					if file.id then
+						file.bClosed = true
+						return _fs.fEdit(ind, "edit", 1, file.dat)
+					else
+						file.bClosed = true
+						local newind = _fs.fEdit(0, "add", 1, file.dat)
+						local parind = _fs.findInode(_fs.getDir(path))
+						local nDat = thisHD.sector1.blocks[thisHD.sector1.inodes[parind].block]
+						nDat[_fs.getName("asdasdas/"..file.pth)] = newind
+						return _fs.fEdit(parind, "edit", 0, nDat)
+					end
 				else
-					local newind = _fs.fEdit(0, "add", 1, file.dat)
-					local nDat = thisHD.sector1.blocks[thisHD.sector1.inodes[2].block]
-					nDat[_fs.getName("asdasdas/"..file.pth)] = newind
-					return _fs.fEdit(2, "edit", 0, nDat)
+					return false, "file is closed"
 				end
+			end,
+			flush = function()
+				close()
 			end,
 		}
 		return file
@@ -147,21 +297,35 @@ function _fs.open(path, mode)
 
 		if not type(dat) == "string" then return false, err end
 		file = {
+			bClosed = false,
 			readAll = function()
-				return dat
+				if not file.bClosed then
+					return dat
+				else
+					return false, "file is closed"
+				end
 			end,
 			readLine = function()
-				local h, j = string.find(dat, "[\]n")
-				if h then
-					local s = string.sub(dat, h-1)
-					dat = string.sub(dat, j+1)
-					return s
+				if not file.bClosed then
+					local h, j = string.find(dat, "\n")
+					if h then
+						local s = string.sub(dat, h-1)
+						dat = string.sub(dat, j+1)
+						return s
+					else
+						return dat
+					end
 				else
-					return dat
+					return false, "file is closed"
 				end
 			end,
 			close = function()
-				return nil
+				if not file.bClosed then
+					file.bClosed = true
+					return nil
+				else
+					return false, "file is closed"
+				end
 			end,
 		}
 		return file
@@ -170,27 +334,19 @@ end
 
 function _fs.makeDir(path)
 	if string.find(path, "/") == 1 then path = string.sub(path, 2) end
-	local ppp = string.reverse(path)
-	local pp = string.reverse(path)
-	local p = string.reverse(path)
-	local h, j = string.find(ppp, "/")
-	if h then
-		p = string.sub(ppp, 1, h-1)
-		pp = string.sub(ppp, h+1)
-	end
-	p = string.reverse(p)
-	pp = string.reverse(pp)
-	if type(_fs.find(path)) == "number" then return nil end
-	if not thisHD.sector1.inodes[_fs.find(pp)].type == 0 then return nil end
+	if string.find(path, "/", #path) then path = string.sub(path, 1, #path-1) end
+
+	if type(_fs.findInode(path)) == "number" then return nil end
+	if thisHD.sector1.inodes[_fs.findInode(_fs.getDir(path))].type ~= 0 then return nil end
 	local newInode = _fs.fEdit(0, "add", 0, {})
-	local t = thisHD.sector1.blocks[thisHD.sector1.inodes[_fs.find(pp)].block]
-	t[p] = newInode
-	_fs.fEdit(_fs.find(pp), "edit", 0, t)
+	local t = thisHD.sector1.blocks[thisHD.sector1.inodes[_fs.findInode(_fs.getDir(path))].block]
+	t[_fs.getName("asdsadas/"..path)] = newInode
+	_fs.fEdit(_fs.findInode(_fs.getDir(path)), "edit", 0, t)
 	return true
 end
 
 function _fs.exists(path)
-	local ok = _fs.find(path)
+	local ok = _fs.findInode(path)
 	if type(ok) == "boolean" then
 		return false
 	else
@@ -199,7 +355,7 @@ function _fs.exists(path)
 end
 
 function _fs.isDir(path)
-	local ok = _fs.find(path)
+	local ok = _fs.findInode(path)
 	if type(ok) == "boolean" then return false, "Path doesn't exist." end
 	if type(ok) == "number" and thisHD.sector1.inodes[ok].type == 0 then
 		return true
@@ -210,7 +366,7 @@ end
 
 function _fs.isReadOnly(path)
 	if _fs.exists(path) then
-		local ok = _fs.find(path)
+		local ok = _fs.findInode(path)
 		return thisHD.sector1.inodes[ok].readOnly
 	end
 end
@@ -233,6 +389,7 @@ end
 
 function _fs.getDir(path)
 	if string.find(path, "/") == 1 then path = string.sub(path, 2) end
+	if string.find(path, "/", #path) then path = string.sub(path, 1, #path-1) end
 	local ppp = string.reverse(path)
 	local pp = string.reverse(path)
 	local p = string.reverse(path)
@@ -252,7 +409,7 @@ function _fs.move(p1, p2)
 	local name1 = _fs.getName(p1)
 	local name2 = _fs.getName(p2)
 	if _fs.exists(parent1) and _fs.exists(parent2) and _fs.exists(p1) and not _fs.exists(p2) then
-		local parent1In = _fs.find(parent1)
+		local parent1In = _fs.findInode(parent1)
 		local parent2In = _fs.ind(parent2)
 		local oldDat = thisHD.sector1.blocks[thisHD.sector1.inodes[parent1In].block][name1]
 		thisHD.sector1.blocks[thisHD.sector1.inodes[parent1In].block][name1] = nil
@@ -285,7 +442,7 @@ end
 
 function _fs.delete(path)
 	if _fs.exists(path) then
-		local ind = _fs.find(path)
+		local ind = _fs.findInode(path)
 		thisHD.sector1.blocks[thisHD.sector1.inodes[ind].block] = nil
 		thisHD.sector1.inodes[ind] = {}
 		for k, v in pairs(thisHD.sector1.blocks) do
@@ -317,7 +474,7 @@ end
 
 function _fs.getSize(path)
 	if _fs.exists(path) and not _fs.isDir(path) then
-		local ok = _fs.find(path)
+		local ok = _fs.findInode(path)
 		local inhalt = thisHD.sector1.blocks[_fs.inodes[ok].block]
 		if type(inhalt) == "table" then
 			inhalt = textutils.serialize(inhalt)
@@ -335,7 +492,7 @@ end
 
 
 --[[
-		cVMWare 
+		cVMWare
 
 	A WIP "virtual machine"-manager in CC.
 
@@ -522,13 +679,13 @@ local function runHardDrive(path)
 	env.os.sleep = os.sleep
 	env.os.setAlarm = os.setAlarm
 	thisHD = inhalt
-	local file = fs.open("/dummyFS", "r")
+	--[[local file = fs.open("/dummyFS", "r")
 	local inhalt = file.readAll()
 	file.close()
 	local file = fs.open("/tmpfs", "w")
 	file.writeLine("rootPath='".."/tmp/"..fs.getName(path).."/'")
 	file.write(inhalt)
-	file.close()
+	file.close()]]
 	os.loadAPI("/tmpfs")
 	env.fs = _fs
 	--[[local forbidden = {"colors", "colours", "disk", "gps", "help", "keys", "paintutils", "parallel", "rednet", "settings", "textutils", "window"}

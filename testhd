@@ -14,9 +14,10 @@ end",
       },
       {
         romFile = 4,
+        testtest = 8,
       },
       "Hello, ROM",
-      last_block = 7,
+      last_block = 8,
       [ 6 ] = "\
 function test() print('hello') end\
 test()",
@@ -31,6 +32,8 @@ for k, v in pairs(_G.testAPI) do\
 print(k)\
 print(v)\
 end",
+      [ 8 ] = "\
+hellö",
     },
     inodes = {
       {
@@ -55,14 +58,18 @@ end",
       },
       {},
       {
-        type = 1,
         block = 6,
+        type = 1,
       },
       {
-        type = 1,
         block = 7,
+        type = 1,
       },
-      last_inode = 7,
+      {
+        block = 8,
+        type = 1,
+      },
+      last_inode = 8,
     },
   },
   bootSector = {
