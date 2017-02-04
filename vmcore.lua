@@ -23,6 +23,13 @@
 	It makes "gigantic" virtual "hard-drives".
 
 ]]
+local oldErr = _G.printError
+_G['printError'] = function(str)
+	local file = fs.open("/ttt", "a")
+	file.writeLine("ERROR: "..str)
+	file.close()
+	return oldErr(str)
+end
 
 --Variablen
 _ver=0.1
@@ -112,6 +119,7 @@ local function runHardDrive(path)
 		"xpcall",
 		"bit",
 		"bit32",
+		"keys",
 		"coroutine",
 		"io",
 		"math",
@@ -122,7 +130,8 @@ local function runHardDrive(path)
 		"http",
 		"vector",
 		"read",
-		"loadfile"
+		"loadfile",
+		"sleep"
 	}
 	--[[for k, v in pairs(_G) do
 		env[k] = v
